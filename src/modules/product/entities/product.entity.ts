@@ -1,11 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { AfterRemove, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
 import { CategoryEntity } from '../../category/entities/category.entity';
+import { fileRemove } from 'src/utils';
+import { UseDto } from '../../../common/dto/use-dto.decorator';
+import { ProductDto } from '../dto/product.dto';
+
 // import { OrderProductQuantityEntity } from 'src/modules/order/entities/order-product.entity';
 
 @Entity({ name: 'products' })
-export class ProductEntity extends AbstractEntity {
+@UseDto(ProductDto)
+export class ProductEntity extends AbstractEntity<ProductDto> {
   @Column('varchar')
   productName!: string;
 
@@ -38,9 +43,8 @@ export class ProductEntity extends AbstractEntity {
   @JoinColumn({ name: 'category_id' })
   category!: CategoryEntity;
 
-  // @OneToMany(
-  //   () => OrderProductQuantityEntity,
-  //   (orderProductEntity) => orderProductEntity.product,
-  // )
-  // ordersProducts!: OrderProductQuantityEntity[];
+  @AfterRemove()
+  delete() {
+    fileRemove(this.image);
+  }
 }

@@ -9,9 +9,8 @@ import { hashPassword, comparePassword } from '../../utils';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { AdminLoginDto } from '../auth/dto/admin-login.dto';
 import { AdminNotFoundExceptions } from './exceptions/admin-not-found.exceptions';
-import { TokenDto } from 'src/dto/token.dto';
+import { TokenDto } from 'src/common/dto/token.dto';
 import { TokenTypeEnum } from '../../constants/token-type.enum';
-import { personToDto } from '../../common/to-dto';
 
 @Injectable()
 export class AdminService {
@@ -40,9 +39,9 @@ export class AdminService {
     await this.adminRepository.save(newAdminEntity);
 
     const adminToken: TokenDto = {
-      id: adminEntity.id,
-      email: adminEntity.email,
-      role: adminEntity.role,
+      id: newAdminEntity.id,
+      email: newAdminEntity.email,
+      role: newAdminEntity.role,
       type: TokenTypeEnum.ACCESS_TOKEN,
     };
 
@@ -80,8 +79,6 @@ export class AdminService {
       throw new AdminNotFoundExceptions();
     }
 
-    const adminDto = personToDto(adminEntity);
-
-    return adminDto;
+    return adminEntity.toDto();
   }
 }

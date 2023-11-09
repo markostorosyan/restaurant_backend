@@ -6,6 +6,7 @@ import { CategoryEntity } from './entities/category.entity';
 import { Repository } from 'typeorm';
 import { CategoryWithThisNameAlreadyExistExceptions } from './exceptions/category-with-this-name-already-exist.exceptions';
 import { CategoryNotFoundExceptions } from './exceptions/category-not-found.exceptions';
+import { CategoryDto } from './dto/category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -14,7 +15,7 @@ export class CategoryService {
     private categoryRepository: Repository<CategoryEntity>,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<void> {
+  async create(createCategoryDto: CreateCategoryDto): Promise<CategoryDto> {
     const categoryEntity = await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.name = :name', { name: createCategoryDto.name })
@@ -26,6 +27,8 @@ export class CategoryService {
 
     const newCategoryEntity = this.categoryRepository.create(createCategoryDto);
     await this.categoryRepository.save(newCategoryEntity);
+
+    return newCategoryEntity.toDto();
   }
 
   async getAll(): Promise<CategoryEntity[]> {
@@ -35,7 +38,7 @@ export class CategoryService {
       .getMany();
   }
 
-  async findById(id: Uuid): Promise<CategoryEntity> {
+  async findById(id: Uuid): Promise<CategoryDto> {
     const categoryEntity = await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.id = :id', { id })
@@ -45,10 +48,10 @@ export class CategoryService {
       throw new CategoryNotFoundExceptions();
     }
 
-    return categoryEntity;
+    return categoryEntity.toDto();
   }
 
-  async findByName(name: string): Promise<CategoryEntity> {
+  async findByName(name: string): Promise<CategoryDto> {
     const categoryEntity = await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.name = :name', { name })
@@ -58,13 +61,13 @@ export class CategoryService {
       throw new CategoryNotFoundExceptions();
     }
 
-    return categoryEntity;
+    return categoryEntity.toDto();
   }
 
   async update(
     id: Uuid,
     updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryEntity> {
+  ): Promise<CategoryDto> {
     const categoryEntity = await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.id = :id', { id })
@@ -77,7 +80,7 @@ export class CategoryService {
     this.categoryRepository.merge(categoryEntity, updateCategoryDto);
     await this.categoryRepository.save(updateCategoryDto);
 
-    return categoryEntity;
+    return categoryEntity.toDto();
   }
 
   async delete(id: Uuid): Promise<void> {

@@ -10,7 +10,7 @@ import {
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CustomerLoginDto } from './dto/customer-login.dto';
-import { LoginPayloadDto } from '../../dto/login-payload.dto';
+import { LoginPayloadDto } from '../../common/dto/login-payload.dto';
 // import { AuthGuard } from '@nestjs/passport';
 import { CreateCustomerDto } from '../customer/dto/create-customer.dto';
 import { CustomerDto } from '../customer/dto/customer.dto';
@@ -20,7 +20,7 @@ import { CreateAdminDto } from '../admin/dto/create-admin.dto';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
-import { TokenDto } from '../../dto/token.dto';
+import { TokenDto } from '../../common/dto/token.dto';
 
 @ApiTags('auth')
 @Controller('auth')

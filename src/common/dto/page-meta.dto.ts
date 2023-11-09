@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PageMetaDtoParameters } from '../interfaces/page-meta-dto-parameters.interface';
+import { PageMetaDtoParameters } from '../../interfaces/page-meta-dto-parameters.interface';
 import { IsBoolean, IsNumber } from 'class-validator';
 
 export class PageMetaDto {
@@ -28,7 +28,7 @@ export class PageMetaDto {
   readonly hasNextPage: boolean = false;
 
   constructor({ pageOptionsDto, itemCount }: PageMetaDtoParameters) {
-    if (pageOptionsDto) {
+    if (!pageOptionsDto) {
       return;
     }
 

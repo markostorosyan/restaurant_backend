@@ -2,19 +2,19 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 export class CreateAdminDto {
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: 'Billy' })
   @IsString()
   firstName!: string;
 
-  @ApiProperty({ example: 'Smith' })
+  @ApiProperty({ example: 'Caldwell' })
   @IsString()
   lastName!: string;
 
-  @ApiProperty({ example: 'email@gmail.com' })
+  @ApiProperty({ example: 'admin@gmail.com' })
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ example: '+37499999999' })
+  @ApiProperty({ example: '+37499999998' })
   @IsPhoneNumber()
   phoneNumber!: string;
 

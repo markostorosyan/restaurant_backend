@@ -15,7 +15,7 @@ import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { AccessDeniedException } from '../../exception/access-denied.exception';
 import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
-import { TokenDto } from '../../dto/token.dto';
+import { TokenDto } from '../../common/dto/token.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
 
 @ApiTags('customers')

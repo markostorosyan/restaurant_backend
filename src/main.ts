@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use('/public', express.static(join(__dirname, '..', 'public')));
 
-  createStorageDirectories(FILESYSTEM_DIRECTORIES); // Creating needed directories for uploading files.
+  createStorageDirectories(FILESYSTEM_DIRECTORIES);
 
   const config = new DocumentBuilder()
     .setTitle('Restaurant example')

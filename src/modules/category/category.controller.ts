@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   HttpCode,
   HttpStatus,
@@ -16,6 +15,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { Auth } from '../../guards/auth.guard';
+import { CategoryDto } from './dto/category.dto';
+import { UUIDParam } from '../../common/parse-uuid-pipe';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -26,7 +27,7 @@ export class CategoryController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Create category ' })
   @Auth([RoleTypeEnum.ADMIN])
-  create(@Body() createCategoryDto: CreateCategoryDto): Promise<void> {
+  create(@Body() createCategoryDto: CreateCategoryDto): Promise<CategoryDto> {
     return this.categoryService.create(createCategoryDto);
   }
 
@@ -42,7 +43,7 @@ export class CategoryController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: CategoryEntity, description: 'Get category by id' })
   @Auth([RoleTypeEnum.ADMIN, RoleTypeEnum.CUSTOMER])
-  findOne(@Param('id') id: Uuid): Promise<CategoryEntity> {
+  findOne(@UUIDParam('id') id: Uuid): Promise<CategoryDto> {
     return this.categoryService.findById(id);
   }
 
@@ -51,10 +52,9 @@ export class CategoryController {
   @ApiOkResponse({ type: CategoryEntity, description: 'Update category' })
   @Auth([RoleTypeEnum.ADMIN])
   update(
-    @Param('id') id: Uuid,
+    @UUIDParam('id') id: Uuid,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryEntity> {
-    // mb change return
+  ): Promise<CategoryDto> {
     return this.categoryService.update(id, updateCategoryDto);
   }
 
@@ -62,7 +62,7 @@ export class CategoryController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Delete category' })
   @Auth([RoleTypeEnum.ADMIN])
-  remove(@Param('id') id: Uuid): Promise<void> {
+  remove(@UUIDParam('id') id: Uuid): Promise<void> {
     return this.categoryService.delete(id);
   }
 }

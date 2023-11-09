@@ -6,6 +6,10 @@ export class CreateOrderDto {
   @IsUUID('4')
   productId!: Uuid;
 
+  // @ApiProperty({ example: 10.5 })
+  // @IsDecimal()
+  // productPrice!: number;
+
   @ApiProperty({ example: 3 })
   @IsNumber()
   quantity!: number;

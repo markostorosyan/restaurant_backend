@@ -8,11 +8,10 @@ import { CustomerWithThisEmailAlreadyExistExceptions } from './exceptions/custom
 import { CustomerNotFoundExceptions } from './exceptions/customer-not-found.exceptions';
 import { comparePassword, hashPassword } from '../../utils';
 import { CustomerLoginDto } from '../auth/dto/customer-login.dto';
-import { TokenDto } from '../../dto/token.dto';
+import { TokenDto } from '../../common/dto/token.dto';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { CustomerDto } from './dto/customer.dto';
 import { TokenTypeEnum } from '../../constants/token-type.enum';
-import { personToDto } from '../../common/to-dto';
 
 @Injectable()
 export class CustomerService {
@@ -98,9 +97,7 @@ export class CustomerService {
       throw new CustomerNotFoundExceptions();
     }
 
-    const customerDto = personToDto(customerEntity);
-
-    return customerDto;
+    return customerEntity.toDto();
   }
 
   async getMe(id: Uuid): Promise<CustomerDto> {
@@ -113,15 +110,13 @@ export class CustomerService {
       throw new CustomerNotFoundExceptions();
     }
 
-    const customerDto = personToDto(customerEntity);
-
-    return customerDto;
+    return customerEntity.toDto();
   }
 
   async update(
     id: Uuid,
     updateCustomerDto: UpdateCustomerDto,
-  ): Promise<CustomerEntity> {
+  ): Promise<CustomerDto> {
     const customerEntity = await this.customerRepository
       .createQueryBuilder('customer')
       .where('customer.id = :id', { id })
@@ -134,7 +129,7 @@ export class CustomerService {
     this.customerRepository.merge(customerEntity, updateCustomerDto);
     await this.customerRepository.save(customerEntity);
 
-    return customerEntity;
+    return customerEntity.toDto();
   }
 
   async remove(id: Uuid): Promise<void> {

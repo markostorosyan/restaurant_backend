@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CustomerLoginDto } from './dto/customer-login.dto';
 import { CustomerService } from '../customer/customer.service';
-import { LoginPayloadDto } from '../../dto/login-payload.dto';
+import { LoginPayloadDto } from '../../common/dto/login-payload.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CreateCustomerDto } from '../customer/dto/create-customer.dto';
 import { CreateAdminDto } from '../admin/dto/create-admin.dto';

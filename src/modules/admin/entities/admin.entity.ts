@@ -1,9 +1,12 @@
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { Column, Entity } from 'typeorm';
 import { RoleTypeEnum } from '../../../constants/role-type.enum';
+import { UseDto } from '../../../common/dto/use-dto.decorator';
+import { AdminDto } from '../dto/admin.dto';
 
 @Entity({ name: 'admins' })
-export class AdminEntity extends AbstractEntity {
+@UseDto(AdminDto)
+export class AdminEntity extends AbstractEntity<AdminDto> {
   @Column({ type: 'varchar', unique: true })
   email!: string;
 
@@ -13,7 +16,7 @@ export class AdminEntity extends AbstractEntity {
   @Column('varchar')
   lastName!: string;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', unique: true })
   phoneNumber!: string;
 
   @Column('varchar')
