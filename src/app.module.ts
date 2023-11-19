@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import './polyfill';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CategoryModule } from './modules/category/category.module';

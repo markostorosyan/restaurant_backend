@@ -10,7 +10,7 @@ export class CreateProductDto {
   @IsDecimal()
   price!: number;
 
-  @ApiProperty({ example: 'pizza with something' })
+  @ApiPropertyOptional({ example: 'pizza with something' })
   @IsString()
   @IsOptional()
   description?: string;

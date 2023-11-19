@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { fileRemove, fileUpload } from '../../utils';
 import { ProductEntity } from './entities/product.entity';
 import { CategoryService } from '../category/category.service';
-import { ProductNotFoundExceptions } from './exceptions/product-not-found.exceptions';
+import { ProductNotFoundExceptions } from './exceptions/product-not-found.exception';
 import { PageDto } from '../../common/dto/page.dto';
 import { ProductPageOptionDto } from './dto/product-page-option.dto';
 import { ProductDto } from './dto/product.dto';
@@ -16,8 +16,9 @@ import {
   CreateOrderArrayDto,
   CreateOrderDto,
 } from '../order/dto/create-order.dto';
-import { ProductsTotalDto } from './dto/producs-total.dto';
 import { ProductQuantityDto } from './dto/product-quantity.dto';
+import { UpdateTotalOrdersDto } from '../order/dto/update-total-orders.dto';
+// import { UpdateTotalOrdersProductDto } from '../order/dto/update-total-orders-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -27,10 +28,15 @@ export class ProductService {
     private categoryService: CategoryService,
   ) {}
 
+  // @Transactional()
+  // async reduceOrder(orders: UpdateTotalOrdersProductDto) {
+  //   const result = await Promise.all(orders.products)
+  // }
+
   @Transactional()
   async priceMultiplyQuantity(
-    createOrderArrayDto: CreateOrderArrayDto,
-    customerId: Uuid,
+    createOrderArrayDto: CreateOrderArrayDto | UpdateTotalOrdersDto,
+    // customerId: Uuid,
   ): Promise<ProductQuantityDto[]> {
     const results = await Promise.all(
       createOrderArrayDto.orders.map(async (order: CreateOrderDto) => {
@@ -47,22 +53,15 @@ export class ProductService {
         }
 
         const totalPrice = totalAmount.price * quantity;
+
         return {
           productId,
           total: parseFloat(totalPrice.toFixed(2)),
           quantity,
-          customer_id: customerId,
+          // customer_id: customerId,
         };
-        // return totalPrice;
       }),
     );
-
-    console.log(results, 'sssssssssss');
-
-    // const total = results.reduce(
-    //   (first, productsTotalPrice) => first + productsTotalPrice,
-    // );
-    // return { total: parseFloat(total.toFixed(2)) };
     return results;
   }
 
@@ -76,6 +75,7 @@ export class ProductService {
       ...createProductDto,
       category_id: categoryEntity.id,
     });
+
     await this.productRepository.save(newProduct);
 
     return newProduct.toDto();
@@ -117,7 +117,7 @@ export class ProductService {
     const orderBy = pageOptionsDto?.orderBy || `createdAt`;
 
     const [items, pageMetaDto] = await queryBuilder
-      .orderBy(`transaction.${orderBy}`, pageOptionsDto.order)
+      .orderBy(`product.${orderBy}`, pageOptionsDto.order)
       .paginate(pageOptionsDto);
 
     return items.toPageDto(pageMetaDto);

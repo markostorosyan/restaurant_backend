@@ -17,9 +17,9 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
-import { ProductEntity } from './entities/product.entity';
+// import { ProductEntity } from './entities/product.entity';
 import { Auth } from '../../guards/auth.guard';
-import { PageDto } from '../../common/dto/page.dto';
+// import { PageDto } from '../../common/dto/page.dto';
 import { ProductPageOptionDto } from './dto/product-page-option.dto';
 import { ProductDto } from './dto/product.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
@@ -51,9 +51,7 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Get all products' })
   @Auth([RoleTypeEnum.ADMIN, RoleTypeEnum.CUSTOMER])
-  findAll(
-    @Query() pageOptionsDto: ProductPageOptionDto,
-  ): Promise<PageDto<ProductEntity>> {
+  findAll(@Query() pageOptionsDto: ProductPageOptionDto) {
     return this.productService.findAll(pageOptionsDto);
   }
 

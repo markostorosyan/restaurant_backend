@@ -1,6 +1,6 @@
 import { IsDecimal, IsNumber, IsUUID } from 'class-validator';
 
-export class ProductQuantityDto {
+export class CreateTotalOrdersDto {
   @IsUUID('4')
   productId!: Uuid;
 

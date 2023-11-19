@@ -4,7 +4,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { RoleTypeEnum } from '../../../constants/role-type.enum';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
 import { CustomerDto } from '../dto/customer.dto';
-import { TotalOrdersEntity } from '../../order/entities/total-orders.entity';
+// import { TotalOrdersEntity } from '../../order/entities/total-orders.entity';
 
 @Entity({ name: 'customers' })
 @UseDto(CustomerDto)
@@ -30,9 +30,9 @@ export class CustomerEntity extends AbstractEntity<CustomerDto> {
   @OneToMany(() => OrderEntity, (orderEntity) => orderEntity.customer)
   orders?: OrderEntity[];
 
-  @OneToMany(
-    () => TotalOrdersEntity,
-    (ordersTotalEntity) => ordersTotalEntity.customer,
-  )
-  totalOrders?: TotalOrdersEntity[];
+  // @OneToMany(
+  //   () => TotalOrdersEntity,
+  //   (ordersTotalEntity) => ordersTotalEntity.customer,
+  // )
+  // totalOrders?: TotalOrdersEntity[];
 }

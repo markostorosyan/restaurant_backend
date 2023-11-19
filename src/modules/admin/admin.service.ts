@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AdminEntity } from './entities/admin.entity';
 import { Repository } from 'typeorm';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { AdminWithThisEmailAlreadyExistExceptions } from './exceptions/admin-with-this-email-already-exist.exceptions';
+import { AdminWithThisEmailAlreadyExistExceptions } from './exceptions/admin-with-this-email-already-exist.exception';
 import { AdminDto } from './dto/admin.dto';
 import { hashPassword, comparePassword } from '../../utils';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { AdminLoginDto } from '../auth/dto/admin-login.dto';
-import { AdminNotFoundExceptions } from './exceptions/admin-not-found.exceptions';
+import { AdminNotFoundExceptions } from './exceptions/admin-not-found.exception';
 import { TokenDto } from 'src/common/dto/token.dto';
 import { TokenTypeEnum } from '../../constants/token-type.enum';
 

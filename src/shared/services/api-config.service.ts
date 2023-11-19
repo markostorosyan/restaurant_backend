@@ -43,6 +43,7 @@ export class ApiConfigService {
       database: this.getString('POSTGRES_DATABASE'),
       synchronize: this.getBoolean('POSTGRES_SYNC'),
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
+      logging: this.getBoolean('POSTGRES_LOGGING'),
     };
   }
 
