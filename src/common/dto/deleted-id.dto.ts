@@ -1,6 +1,6 @@
 import { IsUUID } from 'class-validator';
 
-export class DeletedOrderDto {
+export class DeletedIdDto {
   @IsUUID('4')
   id!: Uuid;
 }

@@ -17,14 +17,15 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
-// import { ProductEntity } from './entities/product.entity';
 import { Auth } from '../../guards/auth.guard';
-// import { PageDto } from '../../common/dto/page.dto';
+import { PageDto } from '../../common/dto/page.dto';
 import { ProductPageOptionDto } from './dto/product-page-option.dto';
 import { ProductDto } from './dto/product.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
 import { ChangeCategoryDto } from './dto/change-product-category.dto';
 import { UpdateProductImageDto } from './dto/update-product-image.dto';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
+import { ProductChangedCategoryDto } from './dto/product-changed-category.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -51,7 +52,9 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Get all products' })
   @Auth([RoleTypeEnum.ADMIN, RoleTypeEnum.CUSTOMER])
-  findAll(@Query() pageOptionsDto: ProductPageOptionDto) {
+  findAll(
+    @Query() pageOptionsDto: ProductPageOptionDto,
+  ): Promise<PageDto<ProductDto>> {
     return this.productService.findAll(pageOptionsDto);
   }
 
@@ -59,7 +62,7 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: ProductDto, description: 'Get one product' })
   @Auth([RoleTypeEnum.ADMIN])
-  findOne(@UUIDParam('id') id: Uuid) {
+  findOne(@UUIDParam('id') id: Uuid): Promise<ProductDto> {
     return this.productService.findOne(id);
   }
 
@@ -70,7 +73,7 @@ export class ProductController {
   update(
     @UUIDParam('id') id: Uuid,
     @Body() updateProductDto: UpdateProductDto,
-  ) {
+  ): Promise<ProductDto> {
     return this.productService.update(id, updateProductDto);
   }
 
@@ -83,12 +86,12 @@ export class ProductController {
   @Auth([RoleTypeEnum.ADMIN])
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('image'))
-  updateImage(
+  async updateImage(
     @UUIDParam('id') id: Uuid,
     @UploadedFile() file: Express.Multer.File,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @Body() updateProductImageDto: UpdateProductImageDto, // for swagger test
-  ) {
+  ): Promise<ProductDto> {
     return this.productService.updateImage(id, file);
   }
 
@@ -99,7 +102,7 @@ export class ProductController {
   changeCategory(
     @UUIDParam('id') id: Uuid,
     @Body() changeCategoryDto: ChangeCategoryDto,
-  ) {
+  ): Promise<ProductChangedCategoryDto> {
     return this.productService.changeCategory(id, changeCategoryDto);
   }
 
@@ -107,7 +110,7 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Delete product by id' })
   @Auth([RoleTypeEnum.ADMIN])
-  remove(@UUIDParam('id') id: Uuid) {
+  remove(@UUIDParam('id') id: Uuid): Promise<DeletedIdDto> {
     return this.productService.delete(id);
   }
 }

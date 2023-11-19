@@ -10,7 +10,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { UpdateTotalOrdersDto } from './dto/update-total-orders.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CreateOrderArrayDto } from './dto/create-order.dto';
 import { Auth } from '../../guards/auth.guard';
@@ -19,11 +18,13 @@ import { AuthUser } from '../../common/auth-user.decorator';
 import { TokenDto } from '../../common/dto/token.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
 import { OrderPageOptionDto } from './dto/order-page-option.dto';
-import { DeletedOrderDto } from './dto/deleted-order.dto';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { CreateOrderCancelReasonDto } from './dto/create-order-cancel-reason.dto';
 import { OrderCancelReasonResponseDto } from './dto/order-cancel-reason-respone.dto';
-import { OrderStatusEnum } from 'src/constants/order-status.enum';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrderDto } from './dto/order.dto';
+import { PageDto } from '../../common/dto/page.dto';
+import { AbstractDto } from '../../common/dto/abstract.dto';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -37,7 +38,7 @@ export class OrderController {
   create(
     @Body() createOrderArrayDto: CreateOrderArrayDto,
     @AuthUser() customer: TokenDto,
-  ) {
+  ): Promise<OrderDto> {
     return this.orderService.create(customer.id, createOrderArrayDto);
   }
 
@@ -48,12 +49,13 @@ export class OrderController {
   findAll(
     @AuthUser() customer: TokenDto,
     @Query() pageOptionsDto: OrderPageOptionDto,
-  ) {
+  ): Promise<PageDto<AbstractDto>> {
+    // ? xi abstractDto
     return this.orderService.findAll(customer.id, pageOptionsDto);
   }
 
   @Get(':id')
-  findOne(@UUIDParam('id') id: Uuid) {
+  findOne(@UUIDParam('id') id: Uuid): Promise<OrderDto> {
     return this.orderService.findOne(id);
   }
 
@@ -80,35 +82,14 @@ export class OrderController {
   changeOrderStatus(
     @UUIDParam('id') id: Uuid,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
-  ) {
+  ): Promise<OrderDto> {
     return this.orderService.changeOrderStatus(id, updateOrderStatusDto);
   }
-  // @Patch(':id')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse({ description: 'Update orders' })
-  // @Auth([RoleTypeEnum.CUSTOMER])
-  // changeOrder(
-  //   @UUIDParam('id') id: Uuid,
-  //   @Body() createOrderArrayDto: UpdateTotalOrdersDto,
-  //   @AuthUser() customer: TokenDto,
-  // ) {
-  //   if (createOrderArrayDto.forDeleteProduct) {
-  //     return this.orderService.deleteProductFromOrder(
-  //       id,
-  //       customer.id,
-  //       createOrderArrayDto,
-  //     );
-  //   }
 
-  //   return this.orderService.addProductToOrder(
-  //     id,
-  //     customer.id,
-  //     createOrderArrayDto,
-  //   );
-  // }
-
-  // @Delete(':id')
-  // remove(@UUIDParam('id') id: Uuid): Promise<DeletedTotalOrders> {
-  //   return this.orderService.remove(id);
-  // }
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: DeletedIdDto, description: 'Delete order' })
+  remove(@UUIDParam('id') id: Uuid): Promise<DeletedIdDto> {
+    return this.orderService.delete(id);
+  }
 }

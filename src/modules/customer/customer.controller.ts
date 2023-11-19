@@ -17,6 +17,7 @@ import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
 import { TokenDto } from '../../common/dto/token.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -60,11 +61,14 @@ export class CustomerController {
   @HttpCode(HttpStatus.OK)
   @Auth([RoleTypeEnum.CUSTOMER, RoleTypeEnum.ADMIN])
   @ApiOkResponse({ type: CustomerDto, description: 'Get all customers' })
-  remove(@UUIDParam('id') id: Uuid, @AuthUser() user: TokenDto) {
+  delete(
+    @UUIDParam('id') id: Uuid,
+    @AuthUser() user: TokenDto,
+  ): Promise<DeletedIdDto> {
     if (user.role === RoleTypeEnum.CUSTOMER && id !== user.id) {
       throw new AccessDeniedException();
     }
 
-    return this.customerService.remove(id);
+    return this.customerService.delete(id);
   }
 }

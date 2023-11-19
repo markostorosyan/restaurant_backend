@@ -10,9 +10,9 @@ import { OrderPageOptionDto } from './dto/order-page-option.dto';
 import { YourCartIsEmptyExceptions } from './exceptions/your-cart-is-empty.exception';
 import { CreateTotalOrdersDto } from './dto/create-total-orders.dto';
 import { OrderNotFound } from './exceptions/oreder-not-found.exception';
-// import { AccessDeniedException } from '../../exception/access-denied.exception';
+import { AbstractDto } from '../../common/dto/abstract.dto';
 import { OrderProductEntity } from './entities/order-product.entity';
-import { DeletedOrderDto } from './dto/deleted-order.dto';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { OrderStatusEnum } from '../../constants/order-status.enum';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderDto } from './dto/order.dto';
@@ -21,6 +21,7 @@ import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { RoleTypeEnum } from 'src/constants/role-type.enum';
 import { OrderCancelReasonResponseDto } from './dto/order-cancel-reason-respone.dto';
 import { OrderStatusCantBeCanceledException } from './exceptions/order-status-cant-be-canceled.exception';
+import { PageDto } from '../../common/dto/page.dto';
 
 @Injectable()
 export class OrderService {
@@ -35,19 +36,15 @@ export class OrderService {
   ) {}
 
   @Transactional()
-  async create(customerId: Uuid, createOrderArrayDto: CreateOrderArrayDto) {
+  async create(
+    customerId: Uuid,
+    createOrderArrayDto: CreateOrderArrayDto,
+  ): Promise<OrderDto> {
     if (isEmpty(createOrderArrayDto.orders)) {
       throw new YourCartIsEmptyExceptions();
     }
-
-    // if (createOrderArrayDto.orders.length < 1) {
-    //   throw new YourCartIsEmptyExceptions();
-    // }
-
-    const formattedTotal = await this.productService.priceMultiplyQuantity(
-      createOrderArrayDto,
-      // customerId,
-    );
+    const ProductsQuantity =
+      await this.productService.priceMultiplyQuantity(createOrderArrayDto);
 
     const orderEntity = this.orderRepository.create({
       customer_id: customerId,
@@ -55,30 +52,15 @@ export class OrderService {
 
     await this.orderRepository.save(orderEntity);
 
-    // const arr = [];
-    // const productIds = formattedTotal.map((product) => {
-    //   return product.productId;
-    // });
+    const createOrdersProductArray = [];
 
-    console.log(formattedTotal);
-
-    // const totalOrdersEntity = this.orderProductRepository.create({
-    //   customer_id: customerId,
-    // });
-
-    // await this.orderProductRepository.save(totalOrdersEntity);
-
-    const createOrderProductArray = [];
-
-    for (const formatted of formattedTotal) {
-      createOrderProductArray.push(
-        this.createOrderProduct(orderEntity.id, formatted),
+    for (const product of ProductsQuantity) {
+      createOrdersProductArray.push(
+        this.createOrderProduct(orderEntity.id, product),
       );
     }
 
-    const totalOrdersEntities = await Promise.all(createOrderProductArray);
-
-    console.log(totalOrdersEntities);
+    const totalOrdersEntities = await Promise.all(createOrdersProductArray);
 
     const total: number = totalOrdersEntities.reduce(
       (first, entity) => first + entity.total,
@@ -92,11 +74,14 @@ export class OrderService {
     return orderEntity.toDto();
   }
 
-  async createOrderProduct(orderId: Uuid, product: CreateTotalOrdersDto) {
+  async createOrderProduct(
+    orderId: Uuid,
+    createTotalOrdersDto: CreateTotalOrdersDto,
+  ): Promise<OrderProductEntity> {
     const orderProductEntity = this.orderProductRepository.create({
-      ...product,
+      ...createTotalOrdersDto,
       order_id: orderId,
-      product_id: product.productId,
+      product_id: createTotalOrdersDto.productId,
     });
 
     await this.orderProductRepository.save(orderProductEntity);
@@ -104,18 +89,10 @@ export class OrderService {
     return orderProductEntity;
   }
 
-  // async createTotalOrders(totalId: Uuid, order: CreateTotalOrdersDto) {
-  //   const orderEntity = this.orderRepository.create({
-  //     ...order,
-  //     total_order_id: totalId,
-  //     product_id: order.productId,
-  //   });
-  //   await this.orderRepository.save(orderEntity);
-
-  //   return orderEntity;
-  // }
-
-  async findAll(id: Uuid, pageOptionsDto?: OrderPageOptionDto) {
+  async findAll(
+    id: Uuid,
+    pageOptionsDto?: OrderPageOptionDto,
+  ): Promise<PageDto<AbstractDto>> {
     const result = await this.orderRepository
       .createQueryBuilder('order')
       // relations-nery pti grvi
@@ -128,11 +105,10 @@ export class OrderService {
       .orderBy(`order.${orderBy}`, pageOptionsDto.order)
       .paginate(pageOptionsDto);
 
-    console.log(items);
     return items.toPageDto(pageMetaDto);
   }
 
-  async findOne(id: Uuid) {
+  async findOne(id: Uuid): Promise<OrderDto> {
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
       // relations-nery pti grvi
@@ -145,7 +121,7 @@ export class OrderService {
       throw new OrderNotFound();
     }
 
-    return orderEntity;
+    return orderEntity.toDto();
   }
 
   async changeOrderStatus(
@@ -213,102 +189,7 @@ export class OrderService {
     };
   }
 
-  // async deleteProductFromOrder(
-  //   id: Uuid,
-  //   customerId: Uuid,
-  //   createOrderArrayDto: UpdateTotalOrdersDto,
-  // ) {
-  //   const totalOrdersEntity = await this.findOne(id);
-
-  //   console.log(createOrderArrayDto, '++++');
-  //   console.log('++++', totalOrdersEntity.ordersId, '-------');
-
-  //   const test = totalOrdersEntity.ordersId;
-  //   // const { quantity, total, products } = test;
-
-  //   // console.log(quantity, '121', total, '741', products)
-
-  //   for (const a of test) {
-  //     const { quantity, total, products } = a;
-
-  //     console.log(quantity, '121', total, '741', products);
-  //   }
-
-  //   // const deleteOrReduceOrder = [];
-
-  //   // for (const order of totalOrdersEntity.orders) {
-  //   //   // deleteOrReduceOrder.push(this.productService.)
-  //   //   console.log(order, '0000000000');
-  //   //   console.log(order.product_id, '======');
-  //   // }
-  //   if (!totalOrdersEntity) {
-  //     throw new TotalOrdersNotFound();
-  //   }
-
-  //   if (totalOrdersEntity.customer_id !== customerId) {
-  //     throw new AccessDeniedException();
-  //   }
-
-  //   if (totalOrdersEntity.status !== TotalOrdersEnum.PENDING) {
-  //     throw new TotalOrdersStatusChangedException();
-  //   }
-  // }
-
-  // async addProductToOrder(
-  //   id: Uuid,
-  //   customerId: Uuid,
-  //   createOrderArrayDto: UpdateTotalOrdersDto,
-  // ) {
-  //   const orderEntity = await this.orderRepository
-  //     .createQueryBuilder('order')
-  //     .where('order.id = :id', { id })
-  //     .andWhere('order.status = :status', {
-  //       status: OrderStatusEnum.PENDING,
-  //     })
-  //     .getOne();
-
-  //   if (!orderEntity) {
-  //     throw new OrderNotFound();
-  //   }
-
-  //   if (orderEntity.customer_id !== customerId) {
-  //     throw new AccessDeniedException();
-  //   }
-
-  //   if (orderEntity.status !== OrderStatusEnum.PENDING) {
-  //     throw new OrderStatusChangedException();
-  //   }
-
-  //   const formattedTotal = await this.productService.priceMultiplyQuantity(
-  //     createOrderArrayDto,
-  //     // customerId,
-  //   );
-
-  //   const createOrderProductArray = [];
-
-  //   for (const formatted of formattedTotal) {
-  //     createOrderProductArray.push(
-  //       this.createOrderProduct(orderEntity.id, formatted),
-  //     );
-  //   }
-
-  //   const totalOrdersEntities = await Promise.all(createOrderProductArray);
-
-  //   const total: number = totalOrdersEntities.reduce(
-  //     (first, entity) => first + entity.total,
-  //     orderEntity.total,
-  //   );
-
-  //   this.orderProductRepository.merge(orderEntity, { total });
-
-  //   await this.orderProductRepository.save(orderEntity);
-
-  //   // after test add toDto()
-  //   return orderEntity;
-  //   // await this.totalOrdersRepository.merge(totalOrdersEntity, updateOrderDto)
-  // }
-
-  async remove(id: Uuid): Promise<DeletedOrderDto> {
+  async delete(id: Uuid): Promise<DeletedIdDto> {
     await this.orderRepository
       .createQueryBuilder()
       .where('id = :id', { id })

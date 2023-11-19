@@ -17,6 +17,7 @@ import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { Auth } from '../../guards/auth.guard';
 import { CategoryDto } from './dto/category.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 
 @ApiTags('categories')
 @Controller('categories')
@@ -62,7 +63,7 @@ export class CategoryController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Delete category' })
   @Auth([RoleTypeEnum.ADMIN])
-  remove(@UUIDParam('id') id: Uuid): Promise<void> {
+  remove(@UUIDParam('id') id: Uuid): Promise<DeletedIdDto> {
     return this.categoryService.delete(id);
   }
 }

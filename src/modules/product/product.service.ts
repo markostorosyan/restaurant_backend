@@ -17,8 +17,8 @@ import {
   CreateOrderDto,
 } from '../order/dto/create-order.dto';
 import { ProductQuantityDto } from './dto/product-quantity.dto';
-import { UpdateTotalOrdersDto } from '../order/dto/update-total-orders.dto';
-// import { UpdateTotalOrdersProductDto } from '../order/dto/update-total-orders-product.dto';
+import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
+import { ProductChangedCategoryDto } from './dto/product-changed-category.dto';
 
 @Injectable()
 export class ProductService {
@@ -28,15 +28,9 @@ export class ProductService {
     private categoryService: CategoryService,
   ) {}
 
-  // @Transactional()
-  // async reduceOrder(orders: UpdateTotalOrdersProductDto) {
-  //   const result = await Promise.all(orders.products)
-  // }
-
   @Transactional()
   async priceMultiplyQuantity(
-    createOrderArrayDto: CreateOrderArrayDto | UpdateTotalOrdersDto,
-    // customerId: Uuid,
+    createOrderArrayDto: CreateOrderArrayDto,
   ): Promise<ProductQuantityDto[]> {
     const results = await Promise.all(
       createOrderArrayDto.orders.map(async (order: CreateOrderDto) => {
@@ -58,7 +52,6 @@ export class ProductService {
           productId,
           total: parseFloat(totalPrice.toFixed(2)),
           quantity,
-          // customer_id: customerId,
         };
       }),
     );
@@ -111,7 +104,7 @@ export class ProductService {
 
   async findAll(
     pageOptionsDto: ProductPageOptionDto,
-  ): Promise<PageDto<ProductEntity>> {
+  ): Promise<PageDto<ProductDto>> {
     const queryBuilder = this.productRepository.createQueryBuilder('product');
 
     const orderBy = pageOptionsDto?.orderBy || `createdAt`;
@@ -136,7 +129,11 @@ export class ProductService {
     return productEntity.toDto();
   }
 
-  async changeCategory(id: Uuid, changeCategoryDto: ChangeCategoryDto) {
+  async changeCategory(
+    id: Uuid,
+    changeCategoryDto: ChangeCategoryDto,
+  ): Promise<ProductChangedCategoryDto> {
+    console.log(changeCategoryDto.categoryName, 'WTFFFFFF');
     const categoryDto = await this.categoryService.findByName(
       changeCategoryDto.categoryName,
     );
@@ -204,7 +201,7 @@ export class ProductService {
     return productEntity.toDto();
   }
 
-  async delete(id: Uuid): Promise<void> {
+  async delete(id: Uuid): Promise<DeletedIdDto> {
     const productEntity = await this.productRepository
       .createQueryBuilder('product')
       .where('product.id = :id', { id })
@@ -215,5 +212,7 @@ export class ProductService {
     }
 
     this.productRepository.remove(productEntity);
+
+    return { id };
   }
 }

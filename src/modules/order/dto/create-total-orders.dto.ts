@@ -9,7 +9,4 @@ export class CreateTotalOrdersDto {
 
   @IsNumber()
   quantity!: number;
-
-  // @IsUUID('4')
-  // customer_id!: Uuid;
 }
