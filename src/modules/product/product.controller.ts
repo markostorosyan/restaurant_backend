@@ -51,7 +51,6 @@ export class ProductController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Get all products' })
-  @Auth([RoleTypeEnum.ADMIN, RoleTypeEnum.CUSTOMER])
   findAll(
     @Query() pageOptionsDto: ProductPageOptionDto,
   ): Promise<PageDto<ProductDto>> {

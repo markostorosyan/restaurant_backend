@@ -24,7 +24,6 @@ import { OrderCancelReasonResponseDto } from './dto/order-cancel-reason-respone.
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderDto } from './dto/order.dto';
 import { PageDto } from '../../common/dto/page.dto';
-import { AbstractDto } from '../../common/dto/abstract.dto';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -49,8 +48,7 @@ export class OrderController {
   findAll(
     @AuthUser() customer: TokenDto,
     @Query() pageOptionsDto: OrderPageOptionDto,
-  ): Promise<PageDto<AbstractDto>> {
-    // ? xi abstractDto
+  ): Promise<PageDto<OrderDto>> {
     return this.orderService.findAll(customer.id, pageOptionsDto);
   }
 

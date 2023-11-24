@@ -105,7 +105,15 @@ export class ProductService {
   async findAll(
     pageOptionsDto: ProductPageOptionDto,
   ): Promise<PageDto<ProductDto>> {
-    const queryBuilder = this.productRepository.createQueryBuilder('product');
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .innerJoinAndSelect('product.category', 'category');
+
+    if (pageOptionsDto.categoryName) {
+      queryBuilder.where('category.name = :name', {
+        name: pageOptionsDto.categoryName,
+      });
+    }
 
     const orderBy = pageOptionsDto?.orderBy || `createdAt`;
 

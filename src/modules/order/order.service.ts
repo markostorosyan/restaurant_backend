@@ -10,7 +10,6 @@ import { OrderPageOptionDto } from './dto/order-page-option.dto';
 import { YourCartIsEmptyExceptions } from './exceptions/your-cart-is-empty.exception';
 import { CreateTotalOrdersDto } from './dto/create-total-orders.dto';
 import { OrderNotFound } from './exceptions/oreder-not-found.exception';
-import { AbstractDto } from '../../common/dto/abstract.dto';
 import { OrderProductEntity } from './entities/order-product.entity';
 import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { OrderStatusEnum } from '../../constants/order-status.enum';
@@ -92,10 +91,9 @@ export class OrderService {
   async findAll(
     id: Uuid,
     pageOptionsDto?: OrderPageOptionDto,
-  ): Promise<PageDto<AbstractDto>> {
+  ): Promise<PageDto<OrderDto>> {
     const result = await this.orderRepository
       .createQueryBuilder('order')
-      // relations-nery pti grvi
       .leftJoinAndSelect('order.orders', 'orderProduct')
       .leftJoinAndSelect('orderProduct.productOrder', 'products')
       .where('order.customer_id = :customerId', { customerId: id });
@@ -111,7 +109,6 @@ export class OrderService {
   async findOne(id: Uuid): Promise<OrderDto> {
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
-      // relations-nery pti grvi
       .leftJoinAndSelect('order.orders', 'orderProduct')
       .leftJoinAndSelect('orderProduct.productOrder', 'products')
       .where('order.customer_id = :customerId', { customerId: id })
