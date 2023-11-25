@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateOrderArrayDto } from './dto/create-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderEntity } from './entities/order.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 import { ProductService } from '../product/product.service';
 import { OrderPageOptionDto } from './dto/order-page-option.dto';
@@ -19,8 +19,9 @@ import { CreateOrderCancelReasonDto } from './dto/create-order-cancel-reason.dto
 import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { RoleTypeEnum } from 'src/constants/role-type.enum';
 import { OrderCancelReasonResponseDto } from './dto/order-cancel-reason-respone.dto';
-import { OrderStatusCantBeCanceledException } from './exceptions/order-status-cant-be-canceled.exception';
 import { PageDto } from '../../common/dto/page.dto';
+import { OrderHistoryEntity } from './entities/order-history.entity';
+import { InvalidTransactionStatusException } from './exceptions/invalid-transaction-status.exception';
 
 @Injectable()
 export class OrderService {
@@ -31,6 +32,8 @@ export class OrderService {
     private orderProductRepository: Repository<OrderProductEntity>,
     @InjectRepository(OrderCancelReasonEntity)
     private orderCancelReasonRepository: Repository<OrderCancelReasonEntity>,
+    @InjectRepository(OrderHistoryEntity)
+    private orderHistoryRepository: Repository<OrderHistoryEntity>,
     private productService: ProductService,
   ) {}
 
@@ -94,23 +97,22 @@ export class OrderService {
   ): Promise<PageDto<OrderDto>> {
     const result = await this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.orders', 'orderProduct')
-      .leftJoinAndSelect('orderProduct.productOrder', 'products')
+      .leftJoinAndSelect('order.orderProducts', 'orderProducts')
+      .leftJoinAndSelect('orderProducts.product', 'products')
       .where('order.customer_id = :customerId', { customerId: id });
     const orderBy = pageOptionsDto?.orderBy || 'createdAt';
 
     const [items, pageMetaDto] = await result
       .orderBy(`order.${orderBy}`, pageOptionsDto.order)
       .paginate(pageOptionsDto);
-
     return items.toPageDto(pageMetaDto);
   }
 
   async findOne(id: Uuid): Promise<OrderDto> {
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect('order.orders', 'orderProduct')
-      .leftJoinAndSelect('orderProduct.productOrder', 'products')
+      .leftJoinAndSelect('order.orderProducts', 'orderProducts')
+      .leftJoinAndSelect('orderProducts.product', 'products')
       .where('order.customer_id = :customerId', { customerId: id })
       .getOne();
 
@@ -121,21 +123,34 @@ export class OrderService {
     return orderEntity.toDto();
   }
 
-  async changeOrderStatus(
+  async completeOrder(
     id: Uuid,
     updateOrderStatus: UpdateOrderStatusDto,
   ): Promise<OrderDto> {
-    if (updateOrderStatus.status === OrderStatusEnum.CANCELED) {
-      throw new OrderStatusCantBeCanceledException();
+    if (
+      updateOrderStatus.status === OrderStatusEnum.PENDING ||
+      updateOrderStatus.status === OrderStatusEnum.CANCELED
+    ) {
+      throw new InvalidTransactionStatusException();
     }
 
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderProducts', 'orderProducts')
+      .leftJoinAndSelect('orderProducts.product', 'products')
       .where('order.id = :id', { id })
-      .andWhere('order.status = :status', {
-        status: OrderStatusEnum.PENDING,
-      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('order.status = :status1', {
+            status1: OrderStatusEnum.PENDING,
+          }).orWhere('order.status = :status2', {
+            status2: OrderStatusEnum.ACCEPTED,
+          });
+        }),
+      )
       .getOne();
+
+    console.log(orderEntity);
 
     if (!orderEntity) {
       throw new OrderNotFound();
@@ -145,6 +160,22 @@ export class OrderService {
     });
 
     await this.orderRepository.save(orderEntity);
+
+    if (updateOrderStatus.status === OrderStatusEnum.COMPLETED) {
+      const products = orderEntity.orderProducts.map((product) => {
+        return {
+          productName: product.product.productName,
+          quantity: product.quantity,
+        };
+      });
+      const orderHistory = this.orderHistoryRepository.create({
+        amount: orderEntity.total,
+        customerId: orderEntity.customer_id,
+        products,
+      });
+
+      await this.orderHistoryRepository.save(orderHistory);
+    }
 
     return orderEntity.toDto();
   }

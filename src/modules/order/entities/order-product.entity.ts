@@ -27,17 +27,21 @@ export class OrderProductEntity extends AbstractEntity<OrderProductDto> {
   @Column('uuid')
   product_id!: Uuid;
 
-  @ManyToOne(() => OrderEntity, (orderEntity) => orderEntity.orders, {
+  @ManyToOne(() => OrderEntity, (orderEntity) => orderEntity.orderProducts, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'order_id' })
-  orderProduct?: OrderEntity;
+  order?: OrderEntity;
 
-  @ManyToOne(() => ProductEntity, (productEntity) => productEntity.products, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @ManyToOne(
+    () => ProductEntity,
+    (productEntity) => productEntity.orderProducts,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'product_id' })
-  productOrder?: ProductEntity;
+  product?: ProductEntity;
 }

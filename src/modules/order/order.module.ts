@@ -7,7 +7,6 @@ import { ProductModule } from '../product/product.module';
 import { OrderProductEntity } from './entities/order-product.entity';
 import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { OrderHistoryEntity } from './entities/order-history.entity';
-// import { TotalOrdersEntity } from './entities/total-orders.entity';
 
 @Module({
   imports: [

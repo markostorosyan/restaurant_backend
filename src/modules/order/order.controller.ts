@@ -77,11 +77,11 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Change order status' })
   @Auth([RoleTypeEnum.ADMIN])
-  changeOrderStatus(
+  completeOrder(
     @UUIDParam('id') id: Uuid,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ): Promise<OrderDto> {
-    return this.orderService.changeOrderStatus(id, updateOrderStatusDto);
+    return this.orderService.completeOrder(id, updateOrderStatusDto);
   }
 
   @Delete(':id')

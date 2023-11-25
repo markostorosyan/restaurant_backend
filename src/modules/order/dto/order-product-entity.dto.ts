@@ -34,7 +34,6 @@ export class OrderProductDto extends AbstractDto {
     this.quantity = orderProductEntity.quantity;
     this.order_id = orderProductEntity.order_id;
     this.product_id = orderProductEntity.product_id;
-    this.product = orderProductEntity.productOrder.toDto();
-    // esi dto vortev 1x a vochte array
+    this.product = orderProductEntity.product?.toDto();
   }
 }

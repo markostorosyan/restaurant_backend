@@ -51,9 +51,9 @@ export class ProductEntity extends AbstractEntity<ProductDto> {
 
   @OneToMany(
     () => OrderProductEntity,
-    (orderProductEntity) => orderProductEntity.productOrder,
+    (orderProductEntity) => orderProductEntity.product,
   )
-  products?: OrderProductEntity[];
+  orderProducts?: OrderProductEntity[];
 
   @AfterRemove()
   delete() {

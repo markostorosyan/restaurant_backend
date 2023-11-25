@@ -4,19 +4,12 @@ import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
 import { CustomerEntity } from 'src/modules/customer/entities/customer.entity';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
 import { OrderDto } from '../dto/order.dto';
-// import { TotalOrdersEntity } from './total-orders.entity';
 import { OrderProductEntity } from './order-product.entity';
 import { OrderStatusEnum } from '../../../constants/order-status.enum';
 
 @Entity({ name: 'orders' })
 @UseDto(OrderDto)
 export class OrderEntity extends AbstractEntity<OrderDto> {
-  // @Column('uuid')
-  // product_id!: Uuid;
-
-  // @Column('int')
-  // quantity!: number;
-
   @Column({
     type: 'decimal',
     precision: 10,
@@ -36,9 +29,6 @@ export class OrderEntity extends AbstractEntity<OrderDto> {
   })
   status!: OrderStatusEnum;
 
-  // @Column('uuid')
-  // total_order_id!: Uuid;
-
   @ManyToOne(() => CustomerEntity, (customerEntity) => customerEntity.orders, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -46,28 +36,9 @@ export class OrderEntity extends AbstractEntity<OrderDto> {
   @JoinColumn({ name: 'customer_id' })
   customer?: CustomerEntity;
 
-  // @ManyToOne(
-  //   () => TotalOrdersEntity,
-  //   (totalOrdersEntity) => totalOrdersEntity.ordersId,
-  //   {
-  //     onDelete: 'CASCADE',
-  //     onUpdate: 'CASCADE',
-  //   },
-  // )
-  // @JoinColumn({ name: 'total_order_id' })
-  // totalOrder?: TotalOrdersEntity;
-
-  // @ManyToOne(() => ProductEntity, (productEntity) => productEntity.orders, {
-  //   onDelete: 'CASCADE',
-  //   onUpdate: 'CASCADE',
-  // })
-  // @JoinColumn({ name: 'product_id' })
-  // products?: ProductEntity;
-
   @OneToMany(
     () => OrderProductEntity,
-    (orderProductEntity) => orderProductEntity.orderProduct,
+    (orderProductEntity) => orderProductEntity.order,
   )
-  orders?: OrderProductEntity[];
-  //productOrders
+  orderProducts?: OrderProductEntity[];
 }

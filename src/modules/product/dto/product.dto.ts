@@ -40,6 +40,6 @@ export class ProductDto extends AbstractDto {
     this.image = productEntity.image || '';
     this.description = productEntity.description || '';
     this.category_id = productEntity.category_id;
-    this.category = productEntity.category.toDto();
+    this.category = productEntity.category?.toDto();
   }
 }

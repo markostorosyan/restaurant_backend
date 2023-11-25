@@ -16,5 +16,3 @@ export class OrderCancelReasonEntity extends AbstractEntity<OrderCancelReasonDto
   @Column('text', { nullable: true })
   reason?: string | null;
 }
-
-/// add historyEntity
