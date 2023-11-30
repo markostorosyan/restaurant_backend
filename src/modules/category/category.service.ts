@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { CategoryWithThisNameAlreadyExistExceptions } from './exceptions/category-with-this-name-already-exist.exception';
 import { CategoryNotFoundExceptions } from './exceptions/category-not-found.exception';
 import { CategoryDto } from './dto/category.dto';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 
 @Injectable()
 export class CategoryService {
@@ -84,13 +83,11 @@ export class CategoryService {
     return categoryEntity.toDto();
   }
 
-  async delete(id: Uuid): Promise<DeletedIdDto> {
+  async delete(id: Uuid): Promise<void> {
     await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.id = :id', { id })
       .delete()
       .execute();
-
-    return { id };
   }
 }

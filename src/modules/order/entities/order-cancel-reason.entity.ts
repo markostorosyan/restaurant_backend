@@ -13,6 +13,9 @@ export class OrderCancelReasonEntity extends AbstractEntity<OrderCancelReasonDto
   @Column('uuid')
   orderId!: Uuid;
 
+  @Column('uuid')
+  userId!: Uuid;
+
   @Column('text', { nullable: true })
   reason?: string | null;
 }

@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import './polyfill';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
@@ -43,7 +41,5 @@ import { DataSource } from 'typeorm';
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

@@ -11,5 +11,5 @@ export class CategoryEntity extends AbstractEntity<CategoryDto> {
   name!: string;
 
   @OneToMany(() => ProductEntity, (productEntity) => productEntity.category)
-  products?: ProductEntity;
+  products?: ProductEntity[]; //?
 }

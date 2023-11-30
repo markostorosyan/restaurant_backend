@@ -1,6 +1,8 @@
-import { IsArray, IsDecimal, IsObject, IsUUID } from 'class-validator';
+import { IsArray, IsDecimal, IsUUID, ValidateNested } from 'class-validator';
 import { AbstractDto } from '../../../common/dto/abstract.dto';
 import { OrderHistoryEntity } from '../entities/order-history.entity';
+import { Type } from 'class-transformer';
+import { OrderHistoryProductsDto } from './order-history-products.dto';
 
 export class OrderHistoryDto extends AbstractDto {
   @IsDecimal()
@@ -10,8 +12,9 @@ export class OrderHistoryDto extends AbstractDto {
   customerId!: Uuid;
 
   @IsArray()
-  @IsObject({ each: true })
-  products?: object[];
+  @Type(() => OrderHistoryProductsDto)
+  @ValidateNested({ each: true })
+  products?: OrderHistoryProductsDto[];
 
   constructor(orderHistoryEntity: OrderHistoryEntity) {
     super(orderHistoryEntity);

@@ -15,9 +15,8 @@ import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { AccessDeniedException } from '../../exception/access-denied.exception';
 import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
-import { TokenDto } from '../../common/dto/token.dto';
+import { ShortUserDto } from '../../common/dto/short-user.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 
 @ApiTags('customers')
 @Controller('customers')
@@ -48,7 +47,7 @@ export class CustomerController {
   update(
     @UUIDParam('id') id: Uuid,
     @Body() updateCustomerDto: UpdateCustomerDto,
-    @AuthUser() user: TokenDto,
+    @AuthUser() user: ShortUserDto,
   ) {
     if (id !== user.id) {
       throw new AccessDeniedException();
@@ -63,8 +62,8 @@ export class CustomerController {
   @ApiOkResponse({ type: CustomerDto, description: 'Get all customers' })
   delete(
     @UUIDParam('id') id: Uuid,
-    @AuthUser() user: TokenDto,
-  ): Promise<DeletedIdDto> {
+    @AuthUser() user: ShortUserDto,
+  ): Promise<void> {
     if (user.role === RoleTypeEnum.CUSTOMER && id !== user.id) {
       throw new AccessDeniedException();
     }

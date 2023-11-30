@@ -24,7 +24,6 @@ import { ProductDto } from './dto/product.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
 import { ChangeCategoryDto } from './dto/change-product-category.dto';
 import { UpdateProductImageDto } from './dto/update-product-image.dto';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { ProductChangedCategoryDto } from './dto/product-changed-category.dto';
 
 @ApiTags('products')
@@ -109,7 +108,7 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Delete product by id' })
   @Auth([RoleTypeEnum.ADMIN])
-  remove(@UUIDParam('id') id: Uuid): Promise<DeletedIdDto> {
+  remove(@UUIDParam('id') id: Uuid): Promise<void> {
     return this.productService.delete(id);
   }
 }

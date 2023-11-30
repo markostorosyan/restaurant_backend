@@ -17,7 +17,6 @@ import {
   CreateOrderDto,
 } from '../order/dto/create-order.dto';
 import { ProductQuantityDto } from './dto/product-quantity.dto';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { ProductChangedCategoryDto } from './dto/product-changed-category.dto';
 
 @Injectable()
@@ -141,7 +140,6 @@ export class ProductService {
     id: Uuid,
     changeCategoryDto: ChangeCategoryDto,
   ): Promise<ProductChangedCategoryDto> {
-    console.log(changeCategoryDto.categoryName, 'WTFFFFFF');
     const categoryDto = await this.categoryService.findByName(
       changeCategoryDto.categoryName,
     );
@@ -209,7 +207,7 @@ export class ProductService {
     return productEntity.toDto();
   }
 
-  async delete(id: Uuid): Promise<DeletedIdDto> {
+  async delete(id: Uuid): Promise<void> {
     const productEntity = await this.productRepository
       .createQueryBuilder('product')
       .where('product.id = :id', { id })
@@ -219,8 +217,6 @@ export class ProductService {
       throw new ProductNotFoundExceptions();
     }
 
-    this.productRepository.remove(productEntity);
-
-    return { id };
+    await this.productRepository.remove(productEntity);
   }
 }

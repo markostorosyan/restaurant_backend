@@ -14,8 +14,8 @@ import { OrderHistoryEntity } from './entities/order-history.entity';
     TypeOrmModule.forFeature([
       OrderEntity,
       OrderProductEntity,
-      OrderCancelReasonEntity,
       OrderHistoryEntity,
+      OrderCancelReasonEntity,
     ]),
   ],
   controllers: [OrderController],

@@ -17,8 +17,8 @@ export class OrderEntity extends AbstractEntity<OrderDto> {
     default: 0,
     transformer: new ColumnNumericTransformer(),
   })
-  total!: number;
-  // amount
+  amount!: number;
+
   @Column('uuid')
   customer_id!: Uuid;
 

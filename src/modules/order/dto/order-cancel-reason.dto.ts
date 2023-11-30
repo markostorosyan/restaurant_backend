@@ -10,6 +10,9 @@ export class OrderCancelReasonDto extends AbstractDto {
   @IsUUID('4')
   orderId!: Uuid;
 
+  @IsUUID('4')
+  userId!: Uuid;
+
   @IsString()
   reason?: string | null;
 
@@ -17,6 +20,7 @@ export class OrderCancelReasonDto extends AbstractDto {
     super(orderCancelReasonEntity);
     this.role = orderCancelReasonEntity.role;
     this.orderId = orderCancelReasonEntity.orderId;
+    this.userId = orderCancelReasonEntity.userId;
     this.reason = orderCancelReasonEntity?.reason;
   }
 }

@@ -11,17 +11,20 @@ import { YourCartIsEmptyExceptions } from './exceptions/your-cart-is-empty.excep
 import { CreateTotalOrdersDto } from './dto/create-total-orders.dto';
 import { OrderNotFound } from './exceptions/oreder-not-found.exception';
 import { OrderProductEntity } from './entities/order-product.entity';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 import { OrderStatusEnum } from '../../constants/order-status.enum';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderDto } from './dto/order.dto';
 import { CreateOrderCancelReasonDto } from './dto/create-order-cancel-reason.dto';
-import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { RoleTypeEnum } from 'src/constants/role-type.enum';
 import { OrderCancelReasonResponseDto } from './dto/order-cancel-reason-respone.dto';
 import { PageDto } from '../../common/dto/page.dto';
 import { OrderHistoryEntity } from './entities/order-history.entity';
 import { InvalidTransactionStatusException } from './exceptions/invalid-transaction-status.exception';
+import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
+import { CanceledOrderPageOptionDto } from './dto/canceled-order-page-option.dto';
+import { OrderHistoryPageOptionDto } from './dto/order-history-page-option.dto';
+import { OrderHistoryDto } from './dto/order-history.dto';
+import { OrderAcceptedYouCantCanceledException } from './exceptions/order-accepted-you-cant-canceled.exception';
 
 @Injectable()
 export class OrderService {
@@ -54,22 +57,22 @@ export class OrderService {
 
     await this.orderRepository.save(orderEntity);
 
-    const createOrdersProductArray = [];
+    const createOrderProductsArray = [];
 
     for (const product of ProductsQuantity) {
-      createOrdersProductArray.push(
+      createOrderProductsArray.push(
         this.createOrderProduct(orderEntity.id, product),
       );
     }
 
-    const totalOrdersEntities = await Promise.all(createOrdersProductArray);
+    const totalOrdersEntities = await Promise.all(createOrderProductsArray);
 
-    const total: number = totalOrdersEntities.reduce(
+    const amount: number = totalOrdersEntities.reduce(
       (first, entity) => first + entity.total,
       0,
     );
 
-    this.orderRepository.merge(orderEntity, { total });
+    this.orderRepository.merge(orderEntity, { amount });
 
     await this.orderRepository.save(orderEntity);
 
@@ -92,18 +95,65 @@ export class OrderService {
   }
 
   async findAll(
-    id: Uuid,
-    pageOptionsDto?: OrderPageOptionDto,
+    pageOptionsDto: OrderPageOptionDto,
   ): Promise<PageDto<OrderDto>> {
-    const result = await this.orderRepository
+    const result = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderProducts', 'orderProducts')
-      .leftJoinAndSelect('orderProducts.product', 'products')
-      .where('order.customer_id = :customerId', { customerId: id });
+      .leftJoinAndSelect('orderProducts.product', 'products');
+
+    if (pageOptionsDto.customerId) {
+      result.where('order.customer_id = :customerId', {
+        customerId: pageOptionsDto.customerId,
+      });
+    }
+
+    if (pageOptionsDto.status) {
+      result.andWhere('order.status = :status', {
+        status: pageOptionsDto.status,
+      });
+    }
+
     const orderBy = pageOptionsDto?.orderBy || 'createdAt';
 
     const [items, pageMetaDto] = await result
       .orderBy(`order.${orderBy}`, pageOptionsDto.order)
+      .paginate(pageOptionsDto);
+    return items.toPageDto(pageMetaDto);
+  }
+
+  async getAllCanceled(
+    pageOptionsDto: CanceledOrderPageOptionDto,
+  ): Promise<PageDto<OrderDto>> {
+    const result =
+      this.orderCancelReasonRepository.createQueryBuilder('orderCanceled');
+
+    if (pageOptionsDto.customerId) {
+      result.where('orderCanceled.customer_id = :customerId', {
+        customerId: pageOptionsDto.customerId,
+      });
+    }
+
+    const orderBy = pageOptionsDto?.orderBy || 'createdAt';
+
+    const [items, pageMetaDto] = await result
+      .orderBy(`orderCanceled.${orderBy}`, pageOptionsDto.order)
+      .paginate(pageOptionsDto);
+    return items.toPageDto(pageMetaDto);
+  }
+
+  async getOrdersHistory(
+    id: Uuid,
+    pageOptionsDto: OrderHistoryPageOptionDto,
+  ): Promise<PageDto<OrderHistoryDto>> {
+    const result = this.orderHistoryRepository
+      .createQueryBuilder('orderHistory')
+      .where('orderHistory.customerId = :id', { id });
+
+    const orderBy = pageOptionsDto?.orderBy || 'createdAt';
+
+    const [items, pageMetaDto] = await result
+      .orderBy(`orderHistory.${orderBy}`, pageOptionsDto.order)
       .paginate(pageOptionsDto);
     return items.toPageDto(pageMetaDto);
   }
@@ -113,7 +163,7 @@ export class OrderService {
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.orderProducts', 'orderProducts')
       .leftJoinAndSelect('orderProducts.product', 'products')
-      .where('order.customer_id = :customerId', { customerId: id })
+      .where('order.id = :id', { id })
       .getOne();
 
     if (!orderEntity) {
@@ -123,7 +173,8 @@ export class OrderService {
     return orderEntity.toDto();
   }
 
-  async completeOrder(
+  @Transactional()
+  async updateStatus(
     id: Uuid,
     updateOrderStatus: UpdateOrderStatusDto,
   ): Promise<OrderDto> {
@@ -150,11 +201,10 @@ export class OrderService {
       )
       .getOne();
 
-    console.log(orderEntity);
-
     if (!orderEntity) {
       throw new OrderNotFound();
     }
+
     this.orderRepository.merge(orderEntity, {
       status: updateOrderStatus.status,
     });
@@ -169,7 +219,7 @@ export class OrderService {
         };
       });
       const orderHistory = this.orderHistoryRepository.create({
-        amount: orderEntity.total,
+        amount: orderEntity.amount,
         customerId: orderEntity.customer_id,
         products,
       });
@@ -180,21 +230,31 @@ export class OrderService {
     return orderEntity.toDto();
   }
 
+  @Transactional()
   async cancelOrder(
     id: Uuid,
     role: RoleTypeEnum,
+    userId: Uuid,
     createOrderCancelReasonDto: CreateOrderCancelReasonDto,
   ): Promise<OrderCancelReasonResponseDto> {
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
       .where('order.id = :id', { id })
-      .andWhere('order.status = :status', {
-        status: OrderStatusEnum.PENDING,
-      })
+      // .andWhere('order.status = :status', {
+      //   status: OrderStatusEnum.PENDING,
+      // })
       .getOne();
 
     if (!orderEntity) {
       throw new OrderNotFound();
+    }
+
+    if (orderEntity.status === OrderStatusEnum.CANCELED) {
+      throw new InvalidTransactionStatusException();
+    }
+
+    if (orderEntity.status !== OrderStatusEnum.PENDING) {
+      throw new OrderAcceptedYouCantCanceledException();
     }
 
     this.orderRepository.merge(orderEntity, {
@@ -206,24 +266,33 @@ export class OrderService {
     const reasonEntity = this.orderCancelReasonRepository.create({
       role,
       orderId: orderEntity.id,
+      userId,
       reason: createOrderCancelReasonDto.reason,
     });
 
     await this.orderCancelReasonRepository.save(reasonEntity);
 
     return {
+      id: reasonEntity.id,
       status: orderEntity.status,
       reason: createOrderCancelReasonDto.reason,
     };
   }
 
-  async delete(id: Uuid): Promise<DeletedIdDto> {
+  async delete(id: Uuid): Promise<void> {
     await this.orderRepository
       .createQueryBuilder()
       .where('id = :id', { id })
       .delete()
       .execute();
+  }
 
-    return { id };
+  async deleteHistory(id: Uuid, customerId: Uuid): Promise<void> {
+    await this.orderHistoryRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .andWhere('customerId = :customerId', { customerId })
+      .delete()
+      .execute();
   }
 }

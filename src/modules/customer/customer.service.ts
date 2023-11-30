@@ -12,7 +12,6 @@ import { TokenDto } from '../../common/dto/token.dto';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { CustomerDto } from './dto/customer.dto';
 import { TokenTypeEnum } from '../../constants/token-type.enum';
-import { DeletedIdDto } from '../../common/dto/deleted-id.dto';
 
 @Injectable()
 export class CustomerService {
@@ -133,13 +132,11 @@ export class CustomerService {
     return customerEntity.toDto();
   }
 
-  async delete(id: Uuid): Promise<DeletedIdDto> {
+  async delete(id: Uuid): Promise<void> {
     await this.customerRepository
       .createQueryBuilder('customer')
       .where('customer.id = :id', { id })
       .delete()
       .execute();
-
-    return { id };
   }
 }

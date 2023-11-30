@@ -140,7 +140,6 @@
 //     console.log(quantity, '121', total, '741', products)
 //     }
 
-
 //     // const deleteOrReduceOrder = [];
 
 //     // for (const order of totalOrdersEntity.orders) {

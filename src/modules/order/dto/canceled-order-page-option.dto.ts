@@ -2,9 +2,8 @@ import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { OrdersOrderByEnum } from '../../../constants/orders-order-by.enum';
 import { PageOptionsDto } from '../../../common/dto/page-options.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { OrderStatusEnum } from '../../../constants/order-status.enum';
 
-export class OrderPageOptionDto extends PageOptionsDto {
+export class CanceledOrderPageOptionDto extends PageOptionsDto {
   @ApiPropertyOptional({ enum: OrdersOrderByEnum })
   @IsEnum(OrdersOrderByEnum)
   @IsOptional()
@@ -14,9 +13,4 @@ export class OrderPageOptionDto extends PageOptionsDto {
   @IsUUID('4')
   @IsOptional()
   customerId?: Uuid;
-
-  @ApiPropertyOptional({ enum: OrderStatusEnum })
-  @IsEnum(OrderStatusEnum)
-  @IsOptional()
-  status?: OrderStatusEnum;
 }

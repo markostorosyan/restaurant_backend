@@ -1,0 +1,12 @@
+import { TokenTypeEnum } from '../../constants/token-type.enum';
+import { RoleTypeEnum } from '../../constants/role-type.enum';
+
+export class ShortUserDto {
+  id!: Uuid;
+
+  email!: string;
+
+  role!: RoleTypeEnum;
+
+  type!: TokenTypeEnum.ACCESS_TOKEN;
+}

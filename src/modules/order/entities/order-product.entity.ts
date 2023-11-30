@@ -4,7 +4,7 @@ import { OrderEntity } from './order.entity';
 import { ProductEntity } from 'src/modules/product/entities/product.entity';
 import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
-import { OrderProductDto } from '../dto/order-product-entity.dto';
+import { OrderProductDto } from '../dto/order-product.dto';
 
 @Entity({ name: 'order_products' })
 @UseDto(OrderProductDto)
