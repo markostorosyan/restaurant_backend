@@ -49,9 +49,10 @@ export class AdminService {
   }
 
   async login(adminLoginDto: AdminLoginDto): Promise<TokenDto> {
+    const email = adminLoginDto.email.toLowerCase();
     const adminEntity = await this.adminRepository
       .createQueryBuilder('admin')
-      .where('admin.email = :email', { email: adminLoginDto.email })
+      .where('admin.email = :email', { email })
       .getOne();
 
     if (!adminEntity) {

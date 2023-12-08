@@ -49,9 +49,10 @@ export class CustomerService {
   }
 
   async login(customerLoginDto: CustomerLoginDto): Promise<TokenDto> {
+    const email = customerLoginDto.email.toLowerCase();
     const customerEntity = await this.customerRepository
       .createQueryBuilder('customer')
-      .where('customer.email = :email', { email: customerLoginDto.email })
+      .where('customer.email = :email', { email })
       .getOne();
 
     if (!customerEntity) {

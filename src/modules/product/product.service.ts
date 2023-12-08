@@ -58,25 +58,9 @@ export class ProductService {
   }
 
   @Transactional()
-  async create(createProductDto: CreateProductDto): Promise<ProductDto> {
-    const categoryEntity = await this.categoryService.findByName(
-      createProductDto.categoryName,
-    );
-
-    const newProduct = this.productRepository.create({
-      ...createProductDto,
-      category_id: categoryEntity.id,
-    });
-
-    await this.productRepository.save(newProduct);
-
-    return newProduct.toDto();
-  }
-
-  @Transactional()
-  async createWithImage(
+  async create(
     createProductDto: CreateProductDto,
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ): Promise<ProductDto> {
     const categoryEntity = await this.categoryService.findByName(
       createProductDto.categoryName,
@@ -86,17 +70,20 @@ export class ProductService {
       ...createProductDto,
       category_id: categoryEntity.id,
     });
+
     await this.productRepository.save(newProduct);
 
-    const image = await fileUpload(
-      file,
-      'products',
-      newProduct.id,
-      newProduct.productName,
-    );
+    if (file) {
+      const image = await fileUpload(
+        file,
+        'products',
+        newProduct.id,
+        newProduct.productName,
+      );
 
-    this.productRepository.merge(newProduct, { image });
-    await this.productRepository.save(newProduct);
+      this.productRepository.merge(newProduct, { image });
+      await this.productRepository.save(newProduct);
+    }
 
     return newProduct.toDto();
   }
