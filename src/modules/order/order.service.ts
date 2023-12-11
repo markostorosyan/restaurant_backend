@@ -24,7 +24,7 @@ import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { CanceledOrderPageOptionDto } from './dto/canceled-order-page-option.dto';
 import { OrderHistoryPageOptionDto } from './dto/order-history-page-option.dto';
 import { OrderHistoryDto } from './dto/order-history.dto';
-import { OrderAcceptedYouCantCanceledException } from './exceptions/order-accepted-you-cant-canceled.exception';
+import { EventsNotificationService } from '../event/events-notification.service';
 
 @Injectable()
 export class OrderService {
@@ -38,6 +38,7 @@ export class OrderService {
     @InjectRepository(OrderHistoryEntity)
     private orderHistoryRepository: Repository<OrderHistoryEntity>,
     private productService: ProductService,
+    private eventsNotificationService: EventsNotificationService,
   ) {}
 
   @Transactional()
@@ -72,9 +73,13 @@ export class OrderService {
       0,
     );
 
-    this.orderRepository.merge(orderEntity, { amount });
+    this.orderRepository.merge(orderEntity, {
+      amount: Number(amount.toFixed(2)),
+    });
 
     await this.orderRepository.save(orderEntity);
+
+    this.eventsNotificationService.sendOrderCreatedEvent([customerId]);
 
     return orderEntity.toDto();
   }
@@ -227,6 +232,9 @@ export class OrderService {
       await this.orderHistoryRepository.save(orderHistory);
     }
 
+    this.eventsNotificationService.sendOrderStatusUpdatedEvent([
+      orderEntity.customer_id,
+    ]);
     return orderEntity.toDto();
   }
 
@@ -240,21 +248,13 @@ export class OrderService {
     const orderEntity = await this.orderRepository
       .createQueryBuilder('order')
       .where('order.id = :id', { id })
-      // .andWhere('order.status = :status', {
-      //   status: OrderStatusEnum.PENDING,
-      // })
+      .andWhere('order.status = :status', {
+        status: OrderStatusEnum.PENDING,
+      })
       .getOne();
 
     if (!orderEntity) {
       throw new OrderNotFound();
-    }
-
-    if (orderEntity.status === OrderStatusEnum.CANCELED) {
-      throw new InvalidTransactionStatusException();
-    }
-
-    if (orderEntity.status !== OrderStatusEnum.PENDING) {
-      throw new OrderAcceptedYouCantCanceledException();
     }
 
     this.orderRepository.merge(orderEntity, {
@@ -271,6 +271,8 @@ export class OrderService {
     });
 
     await this.orderCancelReasonRepository.save(reasonEntity);
+
+    this.eventsNotificationService.sendOrderCanceledEvent([userId]);
 
     return {
       id: reasonEntity.id,
@@ -292,6 +294,16 @@ export class OrderService {
       .createQueryBuilder()
       .where('id = :id', { id })
       .andWhere('customerId = :customerId', { customerId })
+      .delete()
+      .execute();
+  }
+
+  async deleteCanceledOrders() {
+    await this.orderRepository
+      .createQueryBuilder()
+      .where("updatedAt <= NOW() - INTERVAL '10 minutes'")
+      // .where("updatedAt <= NOW() - INTERVAL '24 hours'")
+      .andWhere('status = :status', { status: OrderStatusEnum.CANCELED })
       .delete()
       .execute();
   }

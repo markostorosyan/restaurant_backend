@@ -7,10 +7,15 @@ import { ProductModule } from '../product/product.module';
 import { OrderProductEntity } from './entities/order-product.entity';
 import { OrderCancelReasonEntity } from './entities/order-cancel-reason.entity';
 import { OrderHistoryEntity } from './entities/order-history.entity';
+import { ScheduleModule } from '@nestjs/schedule';
+import { EventsModule } from '../event/events.module';
+import { OrderSchedulerService } from './order-scheduler.service';
 
 @Module({
   imports: [
+    forwardRef(() => EventsModule),
     forwardRef(() => ProductModule),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       OrderEntity,
       OrderProductEntity,
@@ -19,6 +24,6 @@ import { OrderHistoryEntity } from './entities/order-history.entity';
     ]),
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, OrderSchedulerService],
 })
 export class OrderModule {}

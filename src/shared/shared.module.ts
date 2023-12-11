@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ApiConfigService } from './services/api-config.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtTokenService } from './services/jwt-token.service';
 
 @Global()
 @Module({
@@ -14,7 +15,7 @@ import { PassportModule } from '@nestjs/passport';
       inject: [ApiConfigService],
     }),
   ],
-  providers: [ApiConfigService],
-  exports: [ApiConfigService],
+  providers: [ApiConfigService, JwtTokenService],
+  exports: [ApiConfigService, JwtTokenService],
 })
 export class SharedModule {}
