@@ -4,8 +4,8 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { Repository } from 'typeorm';
-import { CategoryWithThisNameAlreadyExistExceptions } from './exceptions/category-with-this-name-already-exist.exceptions';
-import { CategoryNotFoundExceptions } from './exceptions/category-not-found.exceptions';
+import { CategoryWithThisNameAlreadyExistExceptions } from './exceptions/category-with-this-name-already-exist.exception';
+import { CategoryNotFoundExceptions } from './exceptions/category-not-found.exception';
 import { CategoryDto } from './dto/category.dto';
 
 @Injectable()

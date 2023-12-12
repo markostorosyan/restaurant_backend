@@ -4,19 +4,12 @@ import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
 import { CustomerEntity } from 'src/modules/customer/entities/customer.entity';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
 import { OrderDto } from '../dto/order.dto';
-import { OrderTotalOrderEntity } from './order-total-order.entity';
-
-// import { OrderProductQuantityEntity } from './order-product.entity';
+import { OrderProductEntity } from './order-product.entity';
+import { OrderStatusEnum } from '../../../constants/order-status.enum';
 
 @Entity({ name: 'orders' })
 @UseDto(OrderDto)
 export class OrderEntity extends AbstractEntity<OrderDto> {
-  @Column('uuid')
-  productId!: Uuid; // if my logic add Uuid[]
-
-  @Column('int')
-  quantity!: number;
-
   @Column({
     type: 'decimal',
     precision: 10,
@@ -24,10 +17,17 @@ export class OrderEntity extends AbstractEntity<OrderDto> {
     default: 0,
     transformer: new ColumnNumericTransformer(),
   })
-  total!: number;
+  amount!: number;
 
   @Column('uuid')
   customer_id!: Uuid;
+
+  @Column({
+    type: 'enum',
+    enum: OrderStatusEnum,
+    default: OrderStatusEnum.PENDING,
+  })
+  status!: OrderStatusEnum;
 
   @ManyToOne(() => CustomerEntity, (customerEntity) => customerEntity.orders, {
     onDelete: 'CASCADE',
@@ -37,14 +37,8 @@ export class OrderEntity extends AbstractEntity<OrderDto> {
   customer?: CustomerEntity;
 
   @OneToMany(
-    () => OrderTotalOrderEntity,
-    (orderTotalOrderEntity) => orderTotalOrderEntity.totalOrders,
+    () => OrderProductEntity,
+    (orderProductEntity) => orderProductEntity.order,
   )
-  orders?: OrderTotalOrderEntity[];
-
-  // @OneToMany(
-  //   () => OrderProductQuantityEntity,
-  //   (orderProductQuantityEntity) => orderProductQuantityEntity.order,
-  // )
-  // ordersProductQuantities!: OrderProductQuantityEntity[];
+  orderProducts?: OrderProductEntity[];
 }

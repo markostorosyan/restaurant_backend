@@ -2,7 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SharedModule } from './shared/shared.module';
 import { ApiConfigService } from './shared/services/api-config.service';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  HttpStatus,
+  UnprocessableEntityException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import { join } from 'path';
@@ -15,7 +19,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     abortOnError: true,
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      transform: true,
+      dismissDefaultMessages: true,
+      exceptionFactory: (errors) => new UnprocessableEntityException(errors),
+    }),
+  );
   app.use('/public', express.static(join(__dirname, '..', 'public')));
 
   createStorageDirectories(FILESYSTEM_DIRECTORIES);
@@ -27,7 +39,11 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   const configService = app.select(SharedModule).get(ApiConfigService);
 

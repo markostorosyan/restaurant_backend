@@ -9,7 +9,4 @@ export class ProductQuantityDto {
 
   @IsNumber()
   quantity!: number;
-
-  @IsUUID('4')
-  customer_id!: Uuid;
 }

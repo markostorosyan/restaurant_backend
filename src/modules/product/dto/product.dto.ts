@@ -1,6 +1,14 @@
-import { IsDecimal, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsDecimal,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 import { AbstractDto } from '../../../common/dto/abstract.dto';
 import { ProductEntity } from '../entities/product.entity';
+import { CategoryDto } from '../../category/dto/category.dto';
+import { Type } from 'class-transformer';
 
 export class ProductDto extends AbstractDto {
   @IsString()
@@ -20,6 +28,11 @@ export class ProductDto extends AbstractDto {
   @IsUUID('4')
   category_id!: Uuid;
 
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CategoryDto)
+  category?: CategoryDto;
+
   constructor(productEntity: ProductEntity) {
     super(productEntity);
     this.productName = productEntity.productName;
@@ -27,5 +40,6 @@ export class ProductDto extends AbstractDto {
     this.image = productEntity.image || '';
     this.description = productEntity.description || '';
     this.category_id = productEntity.category_id;
+    this.category = productEntity.category?.toDto();
   }
 }

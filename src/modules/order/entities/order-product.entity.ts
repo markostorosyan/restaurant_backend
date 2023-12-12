@@ -1,38 +1,47 @@
-// import { ProductEntity } from '../../product/entities/product.entity';
-// import { AbstractEntity } from '../../../common/abstract.entity';
-// import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-// import { OrderEntity } from './order.entity';
+import { AbstractEntity } from '../../../common/abstract.entity';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { OrderEntity } from './order.entity';
+import { ProductEntity } from 'src/modules/product/entities/product.entity';
+import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
+import { UseDto } from '../../../common/dto/use-dto.decorator';
+import { OrderProductDto } from '../dto/order-product.dto';
 
-// @Entity({ name: 'order_product_quantities' })
-// export class OrderProductQuantityEntity extends AbstractEntity {
-//   @Column('uuid')
-//   orderId!: Uuid;
+@Entity({ name: 'order_products' })
+@UseDto(OrderProductDto)
+export class OrderProductEntity extends AbstractEntity<OrderProductDto> {
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
+  total!: number;
 
-//   @Column('uuid')
-//   productId!: Uuid;
+  @Column('int')
+  quantity!: number;
 
-//   @Column('int')
-//   quantity!: number;
+  @Column('uuid')
+  order_id!: Uuid;
 
-//   @ManyToOne(
-//     () => OrderEntity,
-//     (orderEntity) => orderEntity.ordersProductQuantities,
-//     {
-//       onUpdate: 'CASCADE',
-//       onDelete: 'CASCADE',
-//     },
-//   )
-//   @JoinColumn({ name: 'order_id' })
-//   order!: OrderEntity;
+  @Column('uuid')
+  product_id!: Uuid;
 
-// @ManyToOne(
-//   () => ProductEntity,
-//   (productEntity) => productEntity.ordersProducts,
-//   {
-//     onUpdate: 'CASCADE',
-//     onDelete: 'CASCADE',
-//   },
-// )
-// @JoinColumn({ name: 'product_id' })
-// product!: ProductEntity;
-// }
+  @ManyToOne(() => OrderEntity, (orderEntity) => orderEntity.orderProducts, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'order_id' })
+  order?: OrderEntity;
+
+  @ManyToOne(
+    () => ProductEntity,
+    (productEntity) => productEntity.orderProducts,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+  )
+  @JoinColumn({ name: 'product_id' })
+  product?: ProductEntity;
+}

@@ -5,13 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  // UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CustomerLoginDto } from './dto/customer-login.dto';
 import { LoginPayloadDto } from '../../common/dto/login-payload.dto';
-// import { AuthGuard } from '@nestjs/passport';
 import { CreateCustomerDto } from '../customer/dto/create-customer.dto';
 import { CustomerDto } from '../customer/dto/customer.dto';
 import { AdminDto } from '../admin/dto/admin.dto';
@@ -20,7 +18,7 @@ import { CreateAdminDto } from '../admin/dto/create-admin.dto';
 import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
-import { TokenDto } from '../../common/dto/token.dto';
+import { ShortUserDto } from '../../common/dto/short-user.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -65,7 +63,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'get your page ' })
   @Auth([RoleTypeEnum.ADMIN, RoleTypeEnum.CUSTOMER])
-  getMe(@AuthUser() user: TokenDto): Promise<CustomerDto | AdminDto> {
+  getMe(@AuthUser() user: ShortUserDto): Promise<CustomerDto | AdminDto> {
     return this.authService.getMe(user.id, user.role);
   }
 }

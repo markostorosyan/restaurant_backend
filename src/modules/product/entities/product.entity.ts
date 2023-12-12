@@ -1,12 +1,18 @@
-import { AfterRemove, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  AfterRemove,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
 import { CategoryEntity } from '../../category/entities/category.entity';
 import { fileRemove } from 'src/utils';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
 import { ProductDto } from '../dto/product.dto';
-
-// import { OrderProductQuantityEntity } from 'src/modules/order/entities/order-product.entity';
+import { OrderProductEntity } from '../../order/entities/order-product.entity';
 
 @Entity({ name: 'products' })
 @UseDto(ProductDto)
@@ -42,6 +48,12 @@ export class ProductEntity extends AbstractEntity<ProductDto> {
   )
   @JoinColumn({ name: 'category_id' })
   category!: CategoryEntity;
+
+  @OneToMany(
+    () => OrderProductEntity,
+    (orderProductEntity) => orderProductEntity.product,
+  )
+  orderProducts?: OrderProductEntity[];
 
   @AfterRemove()
   delete() {

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import './polyfill';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
@@ -13,15 +12,17 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { EventsModule } from './modules/event/events.module';
 
 @Module({
   imports: [
     AuthModule,
     AdminModule,
+    OrderModule,
+    EventsModule,
+    ProductModule,
     CustomerModule,
     CategoryModule,
-    OrderModule,
-    ProductModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -42,7 +43,5 @@ import { DataSource } from 'typeorm';
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

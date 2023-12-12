@@ -2,7 +2,7 @@
   "name": "restaurant-backend",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "Markos Torosyan",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -27,8 +27,11 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.2.10",
+    "@nestjs/schedule": "^4.0.0",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/websockets": "^10.2.10",
     "@types/lodash": "^4.14.200",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
@@ -38,6 +41,7 @@
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2",
     "typeorm": "^0.3.17",
     "typeorm-transactional": "^0.5.0",
     "uuid": "^9.0.1"

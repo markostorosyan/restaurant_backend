@@ -15,7 +15,7 @@ import { RoleTypeEnum } from '../../constants/role-type.enum';
 import { AccessDeniedException } from '../../exception/access-denied.exception';
 import { Auth } from '../../guards/auth.guard';
 import { AuthUser } from '../../common/auth-user.decorator';
-import { TokenDto } from '../../common/dto/token.dto';
+import { ShortUserDto } from '../../common/dto/short-user.dto';
 import { UUIDParam } from '../../common/parse-uuid-pipe';
 
 @ApiTags('customers')
@@ -47,7 +47,7 @@ export class CustomerController {
   update(
     @UUIDParam('id') id: Uuid,
     @Body() updateCustomerDto: UpdateCustomerDto,
-    @AuthUser() user: TokenDto,
+    @AuthUser() user: ShortUserDto,
   ) {
     if (id !== user.id) {
       throw new AccessDeniedException();
@@ -60,11 +60,14 @@ export class CustomerController {
   @HttpCode(HttpStatus.OK)
   @Auth([RoleTypeEnum.CUSTOMER, RoleTypeEnum.ADMIN])
   @ApiOkResponse({ type: CustomerDto, description: 'Get all customers' })
-  remove(@UUIDParam('id') id: Uuid, @AuthUser() user: TokenDto) {
+  delete(
+    @UUIDParam('id') id: Uuid,
+    @AuthUser() user: ShortUserDto,
+  ): Promise<void> {
     if (user.role === RoleTypeEnum.CUSTOMER && id !== user.id) {
       throw new AccessDeniedException();
     }
 
-    return this.customerService.remove(id);
+    return this.customerService.delete(id);
   }
 }

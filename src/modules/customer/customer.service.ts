@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerEntity } from './entities/customer.entity';
 import { Repository } from 'typeorm';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { CustomerWithThisEmailAlreadyExistExceptions } from './exceptions/customer-with-this-email-already-exist.exceptions';
-import { CustomerNotFoundExceptions } from './exceptions/customer-not-found.exceptions';
+import { CustomerWithThisEmailAlreadyExistExceptions } from './exceptions/customer-with-this-email-already-exist.exception';
+import { CustomerNotFoundExceptions } from './exceptions/customer-not-found.exception';
 import { comparePassword, hashPassword } from '../../utils';
 import { CustomerLoginDto } from '../auth/dto/customer-login.dto';
 import { TokenDto } from '../../common/dto/token.dto';
@@ -49,9 +49,10 @@ export class CustomerService {
   }
 
   async login(customerLoginDto: CustomerLoginDto): Promise<TokenDto> {
+    const email = customerLoginDto.email.toLowerCase();
     const customerEntity = await this.customerRepository
       .createQueryBuilder('customer')
-      .where('customer.email = :email', { email: customerLoginDto.email })
+      .where('customer.email = :email', { email })
       .getOne();
 
     if (!customerEntity) {
@@ -132,7 +133,7 @@ export class CustomerService {
     return customerEntity.toDto();
   }
 
-  async remove(id: Uuid): Promise<void> {
+  async delete(id: Uuid): Promise<void> {
     await this.customerRepository
       .createQueryBuilder('customer')
       .where('customer.id = :id', { id })

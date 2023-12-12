@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { fileRemove, fileUpload } from '../../utils';
 import { ProductEntity } from './entities/product.entity';
 import { CategoryService } from '../category/category.service';
-import { ProductNotFoundExceptions } from './exceptions/product-not-found.exceptions';
+import { ProductNotFoundExceptions } from './exceptions/product-not-found.exception';
 import { PageDto } from '../../common/dto/page.dto';
 import { ProductPageOptionDto } from './dto/product-page-option.dto';
 import { ProductDto } from './dto/product.dto';
@@ -16,8 +16,8 @@ import {
   CreateOrderArrayDto,
   CreateOrderDto,
 } from '../order/dto/create-order.dto';
-import { ProductsTotalDto } from './dto/producs-total.dto';
 import { ProductQuantityDto } from './dto/product-quantity.dto';
+import { ProductChangedCategoryDto } from './dto/product-changed-category.dto';
 
 @Injectable()
 export class ProductService {
@@ -30,7 +30,6 @@ export class ProductService {
   @Transactional()
   async priceMultiplyQuantity(
     createOrderArrayDto: CreateOrderArrayDto,
-    customerId: Uuid,
   ): Promise<ProductQuantityDto[]> {
     const results = await Promise.all(
       createOrderArrayDto.orders.map(async (order: CreateOrderDto) => {
@@ -47,44 +46,21 @@ export class ProductService {
         }
 
         const totalPrice = totalAmount.price * quantity;
+
         return {
           productId,
           total: parseFloat(totalPrice.toFixed(2)),
           quantity,
-          customer_id: customerId,
         };
-        // return totalPrice;
       }),
     );
-
-    console.log(results, 'sssssssssss');
-
-    // const total = results.reduce(
-    //   (first, productsTotalPrice) => first + productsTotalPrice,
-    // );
-    // return { total: parseFloat(total.toFixed(2)) };
     return results;
   }
 
   @Transactional()
-  async create(createProductDto: CreateProductDto): Promise<ProductDto> {
-    const categoryEntity = await this.categoryService.findByName(
-      createProductDto.categoryName,
-    );
-
-    const newProduct = this.productRepository.create({
-      ...createProductDto,
-      category_id: categoryEntity.id,
-    });
-    await this.productRepository.save(newProduct);
-
-    return newProduct.toDto();
-  }
-
-  @Transactional()
-  async createWithImage(
+  async create(
     createProductDto: CreateProductDto,
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ): Promise<ProductDto> {
     const categoryEntity = await this.categoryService.findByName(
       createProductDto.categoryName,
@@ -94,30 +70,41 @@ export class ProductService {
       ...createProductDto,
       category_id: categoryEntity.id,
     });
+
     await this.productRepository.save(newProduct);
 
-    const image = await fileUpload(
-      file,
-      'products',
-      newProduct.id,
-      newProduct.productName,
-    );
+    if (file) {
+      const image = await fileUpload(
+        file,
+        'products',
+        newProduct.id,
+        newProduct.productName,
+      );
 
-    this.productRepository.merge(newProduct, { image });
-    await this.productRepository.save(newProduct);
+      this.productRepository.merge(newProduct, { image });
+      await this.productRepository.save(newProduct);
+    }
 
     return newProduct.toDto();
   }
 
   async findAll(
     pageOptionsDto: ProductPageOptionDto,
-  ): Promise<PageDto<ProductEntity>> {
-    const queryBuilder = this.productRepository.createQueryBuilder('product');
+  ): Promise<PageDto<ProductDto>> {
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .innerJoinAndSelect('product.category', 'category');
+
+    if (pageOptionsDto.categoryName) {
+      queryBuilder.where('category.name = :name', {
+        name: pageOptionsDto.categoryName,
+      });
+    }
 
     const orderBy = pageOptionsDto?.orderBy || `createdAt`;
 
     const [items, pageMetaDto] = await queryBuilder
-      .orderBy(`transaction.${orderBy}`, pageOptionsDto.order)
+      .orderBy(`product.${orderBy}`, pageOptionsDto.order)
       .paginate(pageOptionsDto);
 
     return items.toPageDto(pageMetaDto);
@@ -136,7 +123,10 @@ export class ProductService {
     return productEntity.toDto();
   }
 
-  async changeCategory(id: Uuid, changeCategoryDto: ChangeCategoryDto) {
+  async changeCategory(
+    id: Uuid,
+    changeCategoryDto: ChangeCategoryDto,
+  ): Promise<ProductChangedCategoryDto> {
     const categoryDto = await this.categoryService.findByName(
       changeCategoryDto.categoryName,
     );
@@ -214,6 +204,6 @@ export class ProductService {
       throw new ProductNotFoundExceptions();
     }
 
-    this.productRepository.remove(productEntity);
+    await this.productRepository.remove(productEntity);
   }
 }
