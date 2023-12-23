@@ -134,7 +134,7 @@ export class OrderService {
       this.orderCancelReasonRepository.createQueryBuilder('orderCanceled');
 
     if (pageOptionsDto.customerId) {
-      result.where('orderCanceled.customer_id = :customerId', {
+      result.where('orderCanceled.userId = :customerId', {
         customerId: pageOptionsDto.customerId,
       });
     }
