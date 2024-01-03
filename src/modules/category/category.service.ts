@@ -85,8 +85,8 @@ export class CategoryService {
 
   async delete(id: Uuid): Promise<void> {
     await this.categoryRepository
-      .createQueryBuilder('category')
-      .where('category.id = :id', { id })
+      .createQueryBuilder()
+      .where('id = :id', { id })
       .delete()
       .execute();
   }
