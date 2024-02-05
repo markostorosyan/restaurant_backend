@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ColumnNumericTransformer } from '../../../common/decimal.transformer';
-import { CustomerEntity } from 'src/modules/customer/entities/customer.entity';
+import { CustomerEntity } from '../../customer/entities/customer.entity';
 import { UseDto } from '../../../common/dto/use-dto.decorator';
 import { OrderDto } from '../dto/order.dto';
 import { OrderProductEntity } from './order-product.entity';

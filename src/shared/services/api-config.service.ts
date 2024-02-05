@@ -34,6 +34,7 @@ export class ApiConfigService {
   }
 
   get postgresConfig(): TypeOrmModuleOptions {
+    const migrations = [__dirname + '/../../database/migrations/*{.ts,.js}'];
     return {
       type: 'postgres',
       host: this.getString('POSTGRES_HOST'),
@@ -41,7 +42,9 @@ export class ApiConfigService {
       username: this.getString('POSTGRES_USERNAME'),
       password: this.getString('POSTGRES_PASSWORD'),
       database: this.getString('POSTGRES_DATABASE'),
-      synchronize: this.getBoolean('POSTGRES_SYNC'),
+      // synchronize: this.getBoolean('POSTGRES_SYNC'),
+      migrations,
+      migrationsRun: true,
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
       logging: this.getBoolean('POSTGRES_LOGGING'),
     };
