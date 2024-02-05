@@ -1,4 +1,4 @@
-import { OrderEntity } from 'src/modules/order/entities/order.entity';
+import { OrderEntity } from '../../order/entities/order.entity';
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { RoleTypeEnum } from '../../../constants/role-type.enum';

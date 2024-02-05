@@ -1,3 +1,5 @@
+import 'source-map-support/register';
+
 import { compact, map } from 'lodash';
 import { AbstractEntity } from './common/abstract.entity';
 import { AbstractDto } from './common/dto/abstract.dto';
