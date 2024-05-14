@@ -69,7 +69,7 @@ export class ApiConfigService {
     if (isNil(value)) {
       throw new Error(key + ' environment variable does not set');
     }
-
+    console.log('for test');
     return value;
   }
 }
